@@ -86,7 +86,7 @@ def lsd_radix_sort(x: str) -> list[int]:
     >>> lsd_radix_sort('mississippi')
     [11, 10, 7, 4, 1, 0, 9, 8, 6, 3, 5, 2]
     """
-    sufs = list(range(len(x) + 1))
+    sufs = list(range(len(x)+1))
     for col in reversed(range(len(sufs))):
         sufs = b_sort(x, sufs, col)
     return sufs
@@ -104,7 +104,15 @@ def b_sort_range(
     i, j, col = s.pop()
 
     # collect buckets for this pass
-    buckets = collect_buckets(x, col)
+    counts: dict[int, int] = defaultdict(lambda: 0)
+    for suf in sufs[i:j]:
+        counts[key(x, suf, col)] += 1
+
+    buckets = {}
+    count = 0
+    for a in sorted(counts):
+        buckets[a] = count
+        count += counts[a]
 
     # intervals to be sorted later...
     breakpoints = [i + off for off in buckets.values()] + [j]
