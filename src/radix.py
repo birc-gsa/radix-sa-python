@@ -8,6 +8,8 @@ def count_sort(x: str) -> str:
 
     >>> count_sort('abaab')
     'aaabb'
+    >>> count_sort('')
+    ''
     """
     counts = Counter(x)
     return "".join(a * counts[a] for a in sorted(counts))
@@ -22,6 +24,8 @@ def bucket_sort(x: str, idx: list[int]) -> list[int]:
     [0, 2, 3, 1, 4]
     >>> bucket_sort('abaab', [4, 3, 2, 1, 0])
     [3, 2, 0, 4, 1]
+    >>> bucket_sort('', [])
+    []
     """
     counts = Counter(x)
 
@@ -45,10 +49,10 @@ def key(x: str, suf: int, col: int) -> int:
     return ord(x[suf+col]) if suf+col < len(x) else 0
 
 
-def b_sort(x: str, sufs: list[int], col: int) -> list[int]:
-    """Bucket-sort the indices in idx using keys from the string x."""
+def collect_buckets(x: str, col: int) -> dict[int, int]:
+    """Compute the bucket indices for x at column col."""
     counts: dict[int, int] = defaultdict(lambda: 0)
-    for i in sufs:
+    for i in range(len(x) + 1):
         counts[key(x, i, col)] += 1
 
     buckets = {}
@@ -56,6 +60,13 @@ def b_sort(x: str, sufs: list[int], col: int) -> list[int]:
     for a in sorted(counts):
         buckets[a] = count
         count += counts[a]
+
+    return buckets
+
+
+def b_sort(x: str, sufs: list[int], col: int) -> list[int]:
+    """Bucket-sort the indices in idx using keys from the string x."""
+    buckets = collect_buckets(x, col)
 
     out = [0] * len(sufs)
     for i in sufs:
@@ -75,7 +86,7 @@ def lsd_radix_sort(x: str) -> list[int]:
     >>> lsd_radix_sort('mississippi')
     [11, 10, 7, 4, 1, 0, 9, 8, 6, 3, 5, 2]
     """
-    sufs = list(range(len(x)+1))
+    sufs = list(range(len(x) + 1))
     for col in reversed(range(len(sufs))):
         sufs = b_sort(x, sufs, col)
     return sufs
@@ -92,15 +103,8 @@ def b_sort_range(
     """
     i, j, col = s.pop()
 
-    counts: dict[int, int] = defaultdict(lambda: 0)
-    for suf in sufs[i:j]:
-        counts[key(x, suf, col)] += 1
-
-    buckets = {}
-    count = 0
-    for a in sorted(counts):
-        buckets[a] = count
-        count += counts[a]
+    # collect buckets for this pass
+    buckets = collect_buckets(x, col)
 
     # intervals to be sorted later...
     breakpoints = [i + off for off in buckets.values()] + [j]
