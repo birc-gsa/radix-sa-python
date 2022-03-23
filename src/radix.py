@@ -1,7 +1,5 @@
 """Radix sorting module."""
 
-from collections import Counter, defaultdict
-
 
 def count_sort(x: str) -> str:
     """Count-sort the string x.
@@ -11,8 +9,7 @@ def count_sort(x: str) -> str:
     >>> count_sort('')
     ''
     """
-    counts = Counter(x)
-    return "".join(a * counts[a] for a in sorted(counts))
+    return ""
 
 
 def bucket_sort(x: str, idx: list[int]) -> list[int]:
@@ -27,54 +24,7 @@ def bucket_sort(x: str, idx: list[int]) -> list[int]:
     >>> bucket_sort('', [])
     []
     """
-    counts = Counter(x)
-
-    buckets = {}
-    count = 0
-    for a in sorted(counts):
-        buckets[a] = count
-        count += counts[a]
-
-    out = [0] * len(idx)
-    for i in idx:
-        a = x[i]
-        out[buckets[a]] = i
-        buckets[a] += 1
-
-    return out
-
-
-def key(x: str, suf: int, col: int) -> int:
-    """Compute the key for suffix x[suf:] for column col."""
-    return ord(x[suf+col]) if suf+col < len(x) else 0
-
-
-def collect_buckets(x: str, col: int) -> dict[int, int]:
-    """Compute the bucket indices for x at column col."""
-    counts: dict[int, int] = defaultdict(lambda: 0)
-    for i in range(len(x) + 1):
-        counts[key(x, i, col)] += 1
-
-    buckets = {}
-    count = 0
-    for a in sorted(counts):
-        buckets[a] = count
-        count += counts[a]
-
-    return buckets
-
-
-def b_sort(x: str, sufs: list[int], col: int) -> list[int]:
-    """Bucket-sort the indices in idx using keys from the string x."""
-    buckets = collect_buckets(x, col)
-
-    out = [0] * len(sufs)
-    for i in sufs:
-        a = key(x, i, col)
-        out[buckets[a]] = i
-        buckets[a] += 1
-
-    return out
+    return []
 
 
 def lsd_radix_sort(x: str) -> list[int]:
@@ -86,48 +36,7 @@ def lsd_radix_sort(x: str) -> list[int]:
     >>> lsd_radix_sort('mississippi')
     [11, 10, 7, 4, 1, 0, 9, 8, 6, 3, 5, 2]
     """
-    sufs = list(range(len(x)+1))
-    for col in reversed(range(len(sufs))):
-        sufs = b_sort(x, sufs, col)
-    return sufs
-
-
-def b_sort_range(
-        x: str, sufs: list[int],
-        s: list[tuple[int, int, int]]
-) -> None:
-    """Bucket sort the range sufs[i:j].
-
-    Gets range i:j and column col from the stack in s. Then sorts sufs[i:j]
-    and pushes intervals that aren't done yet unto the stack.
-    """
-    i, j, col = s.pop()
-
-    # collect buckets for this pass
-    counts: dict[int, int] = defaultdict(lambda: 0)
-    for suf in sufs[i:j]:
-        counts[key(x, suf, col)] += 1
-
-    buckets = {}
-    count = 0
-    for a in sorted(counts):
-        buckets[a] = count
-        count += counts[a]
-
-    # intervals to be sorted later...
-    breakpoints = [i + off for off in buckets.values()] + [j]
-    for start, end in zip(breakpoints[:-1], breakpoints[1:]):
-        if start + 1 < end:
-            s.append((start, end, col + 1))
-
-    # sort the interval
-    out = [0] * (j - i)
-    for suf in sufs[i:j]:
-        a = key(x, suf, col)
-        out[buckets[a]] = suf
-        buckets[a] += 1
-
-    sufs[i:j] = out
+    return []
 
 
 def msd_radix_sort(x: str) -> list[int]:
@@ -139,8 +48,4 @@ def msd_radix_sort(x: str) -> list[int]:
     >>> msd_radix_sort('mississippi')
     [11, 10, 7, 4, 1, 0, 9, 8, 6, 3, 5, 2]
     """
-    sufs = list(range(len(x) + 1))
-    s = [(0, len(sufs), 0)]
-    while s:
-        b_sort_range(x, sufs, s)
-    return sufs
+    return []
